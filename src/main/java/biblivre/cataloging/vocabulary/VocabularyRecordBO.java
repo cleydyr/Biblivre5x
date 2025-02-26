@@ -77,6 +77,9 @@ public class VocabularyRecordBO extends RecordBO {
 	@Override
 	public boolean save(RecordDTO dto) {
 		Record record = dto.getRecord();
+		
+		//Atualiza vocabulary_records_id_seq com o último valor da coluna id, na tabela vocabulary_records
+		rdao.fixSequence("vocabulary_records_id_seq","vocabulary_records","id");
 
 		Integer id = this.rdao.getNextSerial(RecordType.VOCABULARY + "_records_id_seq");
 		dto.setId(id);

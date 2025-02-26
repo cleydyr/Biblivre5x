@@ -77,6 +77,9 @@ public class AuthorityRecordBO extends RecordBO {
 	public boolean save(RecordDTO dto) {
 		Record record = dto.getRecord();
 
+		//Atualiza authorities_records_id_seq com o último valor da coluna id, na tabela authorities_records
+		rdao.fixSequence("authorities_records_id_seq","authorities_records","id");
+		
 		Integer id = this.rdao.getNextSerial(RecordType.AUTHORITIES + "_records_id_seq");
 		dto.setId(id);
 

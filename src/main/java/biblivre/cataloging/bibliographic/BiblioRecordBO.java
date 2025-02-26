@@ -148,6 +148,9 @@ public class BiblioRecordBO extends RecordBO {
 	public boolean save(RecordDTO dto) {
 		Record record = dto.getRecord();
 
+		//Atualiza biblio_records_id_seq com o último valor da coluna id, na tabela biblio_records
+		rdao.fixSequence("biblio_records_id_seq","biblio_records","id");
+		
 		Integer id = this.rdao.getNextSerial(RecordType.BIBLIO + "_records_id_seq");
 		dto.setId(id);
 

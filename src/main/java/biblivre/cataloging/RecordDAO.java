@@ -49,24 +49,22 @@ import biblivre.marc.MaterialType;
 public abstract class RecordDAO extends AbstractDAO {
 	protected RecordType recordType;
 	
-	public boolean save(RecordDTO dto) {
-		Connection con = null;
-		
-		//Atualiza biblio_records_id_seq com o valor id atual de biblio_records
-		fixSequence("biblio_records_id_seq","biblio_records","id");
- 
+	public boolean save(RecordDTO dto) {//Classe compartilhada com Handler, CataloginHandler,BiblioRecord,AuthorityRecord.
+		Connection con = null;		
+
 	try {
-			StringBuilder sql = new StringBuilder();
-			sql.append("INSERT INTO ").append(this.recordType).append("_records ");
-			sql.append("(iso2709, material, database, created_by) ");
-			sql.append("VALUES (?, ?, ?, ?); ");
+		StringBuilder sql = new StringBuilder();
+		sql.append("INSERT INTO ").append(this.recordType).append("_records ");
+		sql.append("(id, iso2709, material, database, created_by) ");
+		sql.append("VALUES (?, ?, ?, ?, ?); ");
 			
 			con = this.getConnection();
 			PreparedStatement pst = con.prepareStatement(sql.toString());			
-			pst.setString(1, dto.getIso2709());
-			pst.setString(2, dto.getMaterialType().toString());
-			pst.setString(3, dto.getRecordDatabase().toString());
-			pst.setInt(4, dto.getCreatedBy());
+			pst.setInt(1, dto.getId());
+			pst.setString(2, dto.getIso2709());
+			pst.setString(3, dto.getMaterialType().toString());
+			pst.setString(4, dto.getRecordDatabase().toString());
+			pst.setInt(5, dto.getCreatedBy());
 			
 			return pst.executeUpdate() > 0;
 
