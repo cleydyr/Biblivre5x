@@ -1,0 +1,51 @@
+FROM ubuntu:18.04
+
+# Install Java 8
+RUN apt-get update && \
+    apt-get install -y openjdk-8-jdk wget
+
+# Install Tomcat 7
+RUN wget https://archive.apache.org/dist/tomcat/tomcat-7/v7.0.109/bin/apache-tomcat-7.0.109.tar.gz && \
+    tar xzf apache-tomcat-7.0.109.tar.gz -C /opt && \
+    mv /opt/apache-tomcat-7.0.109 /opt/tomcat7 && \
+    rm apache-tomcat-7.0.109.tar.gz
+
+# Install PostgreSQL 9.6 manually from official archive
+RUN apt-get update && \
+    apt-get install -y wget ca-certificates libreadline7 libreadline-dev libssl1.1 libxml2 libxslt1.1 zlib1g zlib1g-dev build-essential && \
+    wget http://ftp.postgresql.org/pub/source/v9.6.24/postgresql-9.6.24.tar.gz && \
+    tar xzf postgresql-9.6.24.tar.gz && \
+    cd postgresql-9.6.24 && \
+    ./configure && make && make install && \
+    cd .. && rm -rf postgresql-9.6.24 postgresql-9.6.24.tar.gz
+
+# Set environment variables
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
+ENV CATALINA_HOME=/opt/tomcat7
+ENV PATH=$PATH:$JAVA_HOME/bin:$CATALINA_HOME/bin:/usr/local/pgsql/bin
+
+# Expose Tomcat and Postgres ports
+EXPOSE 8080 5432
+
+
+
+COPY entrypoint.sh /entrypoint.sh
+COPY sql/createdatabase.sql /docker-entry-initdb.d/createdatabase.sql
+COPY sql/biblivre4.sql /docker-entry-initdb.d/biblivre4.sql
+COPY target/Biblivre5x.war /opt/tomcat7/webapps/Biblivre5.war
+RUN chmod +x /entrypoint.sh
+
+
+# Create postgres user and group
+RUN groupadd -r postgres && useradd -r -g postgres postgres && \
+    mkdir -p /var/lib/postgresql/data && \
+    chown -R postgres:postgres /var/lib/postgresql
+
+# Initialize PostgreSQL data directory as postgres user
+USER postgres
+RUN /usr/local/pgsql/bin/initdb -D /var/lib/postgresql/data --encoding=UTF8
+
+# Switch back to root for entrypoint and Tomcat
+USER root
+
+CMD ["/entrypoint.sh"]
